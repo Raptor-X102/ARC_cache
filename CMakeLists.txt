@@ -1,17 +1,13 @@
-cmake_minimum_required(VERSION 3.10)
-project(arc_cache_project)
+cmake_minimum_required(VERSION 3.14)
+project(ARC_cache_project LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/headers)
+include_directories(${PROJECT_SOURCE_DIR}/headers)
 
-add_library(arc_cache_headers INTERFACE)
+add_executable(arc_cache src/ARC_cache_main.cpp)
+add_executable(tests src/test_main.cpp)
 
-target_include_directories(arc_cache_headers INTERFACE
-    $<BUILD_INTERFACE:${HEADER_DIR}>
-    $<INSTALL_INTERFACE:include>
-)
-
-add_executable(arc_test src/test_main.cpp)
-
-target_link_libraries(arc_test PRIVATE arc_cache_headers)
+set_source_files_properties(src/Perfect_cache_main.c PROPERTIES LANGUAGE CXX)
+add_executable(perfect_cache src/Perfect_cache_main.c)

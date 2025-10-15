@@ -25,7 +25,7 @@ int Perfect_cache(std::vector<std::pair<int, T>> & requests, size_t capacity) {
     std::set<std::pair<int, T>> cache;
 
     int cache_hits = 0;
-    dump_cache(cache);
+    //dump_cache(cache);
     for (size_t i = 0; i < requests.size(); i++) {
 
         auto [key, val] = requests[i];
@@ -40,11 +40,11 @@ int Perfect_cache(std::vector<std::pair<int, T>> & requests, size_t capacity) {
 
             if (cache.size() >= capacity) {
 
-                size_t farthest_entry = -1;
+                size_t farthest_entry = 0;
                 auto farthest_it = cache.begin();
                 for (auto it = cache.begin(); it != cache.end(); it++) {
 
-                    auto [k, v] = *it;
+                    auto& [k, v] = *it;
                     if (key_entries[k].empty()) {
                         farthest_it = it;
                         break;
@@ -64,7 +64,7 @@ int Perfect_cache(std::vector<std::pair<int, T>> & requests, size_t capacity) {
             cache.insert({key, val});
         }
 
-        dump_cache(cache);
+        //dump_cache(cache);
     }
     
     return cache_hits;
