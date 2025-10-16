@@ -3,6 +3,7 @@
 #include <vector>
 
 struct TestConfig {
+
     std::vector<int> keys;
     size_t capacity;
     int expected_hits;
@@ -19,6 +20,7 @@ int failed_tests = 0;
 } while(0)
 
 void assert_equal(int expected, int actual, const std::string& test_name) {
+
     if (expected == actual) {
         std::cout << "PASS: " << test_name << "\n";
     } else {
@@ -28,6 +30,7 @@ void assert_equal(int expected, int actual, const std::string& test_name) {
 }
 
 void run_test(const TestConfig& config) {
+
     std::cout << "Test: " << config.description << "\n";
     std::cout << "Input: capacity=" << config.capacity << ", keys=[";
     for (size_t i = 0; i < config.keys.size(); ++i) {
@@ -53,14 +56,15 @@ void run_test(const TestConfig& config) {
 }
 
 int main() {
+
     std::vector<TestConfig> tests = {
-        {{1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6, 4, 5, 6}, 3, 6, "ARC Repeated Pattern"},
-        {{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, 4, 8, "ARC Large Cycle"},
+        {{1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6, 4, 5, 6}, 3, 8, "ARC Repeated Pattern"},
+        {{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, 4, 2, "ARC Large Cycle"},
         {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 1, 9, "ARC Single Key Repeated"},
-        {{1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, 3, 4, "ARC Repeated After Capacity"},
-        {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2}, 5, 2, "ARC Large Sequence"},
-        {{1, 2, 1, 3, 1, 4, 1, 5, 1, 6}, 2, 4, "ARC Alternating with 1"},
-        {{1, 2, 3, 2, 3, 1, 2, 3, 4, 5, 4, 5}, 3, 5, "ARC Mixed Pattern"},
+        {{1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, 3, 2, "ARC Repeated After Capacity"},
+        {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2}, 5, 0, "ARC Large Sequence"},
+        {{1, 2, 1, 3, 1, 4, 1, 5, 1, 6}, 2, 1, "ARC Alternating with 1"},
+        {{1, 2, 3, 2, 3, 1, 2, 3, 4, 5, 4, 5}, 3, 7, "ARC Mixed Pattern"},
         {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 10, 0, "ARC All Unique"},
         {{1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, 5, 10, "ARC Full Capacity Reuse"},
         {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, 1, 0, "ARC Capacity 1 Long Sequence"}

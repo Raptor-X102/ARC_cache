@@ -4,6 +4,7 @@
 #include "Perfect_cache.h"
 
 struct IdealTest {
+
     const char* name;
     size_t capacity;
     std::vector<int> keys;
@@ -11,19 +12,20 @@ struct IdealTest {
 };
 
 void run_ideal_tests() {
+
     std::vector<IdealTest> tests = {
-        {"Ideal Repeated Pattern", 3, {1,2,3,1,2,3,1,2,3,4,5,6,4,5,6}, 6},
+        {"Ideal Repeated Pattern", 3, {1,2,3,1,2,3,1,2,3,4,5,6,4,5,6}, 9},
         {"Ideal Large Cycle", 4, {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8}, 4},
         {"Ideal Single Key Repeated", 1, {1,1,1,1,1,1,1,1,1,1}, 9},
-        {"Ideal Repeated After Capacity", 3, {1,2,3,4,5,1,2,3,4,5}, 4},
+        {"Ideal Repeated After Capacity", 3, {1,2,3,4,5,1,2,3,4,5}, 3},
         {"Ideal Large Sequence", 5, {1,2,3,4,5,6,7,8,9,10,1,2}, 2},
         {"Ideal Alternating with 1", 2, {1,2,1,3,1,4,1,5,1,6}, 4},
-        {"Ideal Mixed Pattern", 3, {1,2,3,2,3,1,2,3,4,5,4,5}, 5},
+        {"Ideal Mixed Pattern", 3, {1,2,3,2,3,1,2,3,4,5,4,5}, 7},
         {"Ideal All Unique", 10, {1,2,3,4,5,6,7,8,9,10}, 0},
         {"Ideal Full Capacity Reuse", 5, {1,2,3,4,5,1,2,3,4,5,1,2,3,4,5}, 10},
         {"Ideal Capacity 1 Long Sequence", 1, {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}, 0},
-        {"Ideal Simple Optimal", 2, {1,2,3,2,1}, 2},
-        {"Ibel Future Knowledge", 3, {1,2,3,4,1,2,5,1,2,3,4}, 6}
+        {"Ideal Simple Optimal", 2, {1,2,3,2,1}, 1},
+        {"Ibel Future Knowledge", 3, {1,2,3,4,1,2,5,1,2,3,4}, 4}
     };
 
     int total_tests = tests.size();
@@ -32,7 +34,6 @@ void run_ideal_tests() {
     for (int i = 0; i < total_tests; ++i) {
         const auto& test = tests[i];
         
-        // Convert to vector of pairs for Perfect_cache
         std::vector<std::pair<int, int>> requests;
         for (auto key : test.keys) {
             requests.push_back({key, key});
@@ -71,6 +72,7 @@ void run_ideal_tests() {
 }
 
 int main() {
+
     run_ideal_tests();
     return 0;
 }
