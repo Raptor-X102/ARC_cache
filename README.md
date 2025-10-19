@@ -57,6 +57,18 @@ Time consumed: 2214721 us
 124450
 ```
 
+P.S. для замера времени нужно раскомментировать
+```cpp
+
+int Perfect_cache(std::vector<std::pair<int, T>>& requests, size_t capacity) {
+    
+    //Timer timer; <---
+
+    if (capacity == 0) 
+        return 0;
+
+```
+
 ## Характеристики тестирующей машины
 
 | Устройство               	| Huawei Matebook D 16                                                	|

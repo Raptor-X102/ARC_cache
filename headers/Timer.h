@@ -8,7 +8,7 @@ public:
     ~Timer() {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
-        std::cout << "Time consumed: " << duration.count() << " us" << std::endl;
+        std::cerr << "Time consumed: " << duration.count() << " us" << std::endl;
     }
 
 private:

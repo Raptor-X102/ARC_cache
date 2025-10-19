@@ -19,7 +19,7 @@ void dump_cache(std::map<int, T>& cache) {
 template <typename T>
 int Perfect_cache(std::vector<std::pair<int, T>>& requests, size_t capacity) {
     
-    Timer timer;
+    //Timer timer;
 
     if (capacity == 0) 
         return 0;
