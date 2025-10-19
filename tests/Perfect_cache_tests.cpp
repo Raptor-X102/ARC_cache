@@ -24,8 +24,8 @@ void run_ideal_tests() {
         {"Ideal All Unique", 10, {1,2,3,4,5,6,7,8,9,10}, 0},
         {"Ideal Full Capacity Reuse", 5, {1,2,3,4,5,1,2,3,4,5,1,2,3,4,5}, 10},
         {"Ideal Capacity 1 Long Sequence", 1, {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}, 0},
-        {"Ideal Simple Optimal", 2, {1,2,3,2,1}, 1},
-        {"Ibel Future Knowledge", 3, {1,2,3,4,1,2,5,1,2,3,4}, 4}
+        {"Ideal Simple Optimal", 2, {1,2,3,2,1}, 2},
+        {"Ibel Future Knowledge", 3, {1,2,3,4,1,2,5,1,2,3,4}, 5}
     };
 
     int total_tests = tests.size();

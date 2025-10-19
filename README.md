@@ -48,3 +48,11 @@ cd build-debug ctest
 ./arc_cache_unit_tests
 ./perfect_cache_unit_tests
 ```
+
+Результат теста tests/input_data/015.dat:
+
+```bash
+./build-debug/perfect_cache < tests/input_data/015.dat
+Time consumed: 2214721 us
+124450
+```

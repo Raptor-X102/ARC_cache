@@ -9,7 +9,8 @@ int main () {
     std::ios_base::sync_with_stdio(false); // for cin speed boost
     std::cin.tie(nullptr); // detach cin from cout
     size_t capacity, n;
-    std::cin >> capacity >> n;
+    std::cin >> capacity;
+    std::cin >> n;
 
     std::vector<int> requests(n);
     for (auto& key : requests) {
