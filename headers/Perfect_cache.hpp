@@ -5,7 +5,7 @@
 #include <queue>
 #include <iostream>
 #include <vector>
-#include "Timer.h"
+#include "Timer.hpp"
 
 template <typename T>
 void dump_cache(std::map<int, T>& cache) {

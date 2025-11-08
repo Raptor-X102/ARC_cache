@@ -21,6 +21,6 @@ setup_sanitizers(arc_cache)
 add_executable(tests src/test_main.cpp)
 setup_sanitizers(tests)
 
-set_source_files_properties(src/Perfect_cache_main.c PROPERTIES LANGUAGE CXX)
-add_executable(perfect_cache src/Perfect_cache_main.c)
+set_source_files_properties(src/Perfect_cache_main.cpp PROPERTIES LANGUAGE CXX)
+add_executable(perfect_cache src/Perfect_cache_main.cpp)
 setup_sanitizers(perfect_cache)

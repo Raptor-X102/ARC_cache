@@ -1,4 +1,4 @@
-#include "ARC_cache.h"
+#include "ARC_cache.hpp"
 #include <iostream>
 #include <vector>
 
@@ -41,6 +41,7 @@ void run_test(const TestConfig& config) {
     std::cout << "Expected hits: " << config.expected_hits << "\n";
 
     ARC_cache<int> cache(config.capacity);
+    ARC_cache<int, int> cache1 = cache;
     int hits = 0;
     for (int key : config.keys) {
         if (cache.get(key).has_value()) {

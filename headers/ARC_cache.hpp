@@ -265,34 +265,26 @@ public:
 
 private:
     
-    void rebuild_maps(const ARC_cache& rhs) {
+    void rebuild_maps_from(const ARC_cache& rhs) {
 
         T1_map_.clear();
-        for (auto& [key, it] : rhs.T1_map_) {
-
-            auto new_it = std::next(T1_.begin(), std::distance(rhs.T1_.begin(), it));
-            T1_map_[key] = new_it;
+        for (auto it = T1_.begin(); it != T1_.end(); ++it) {
+            T1_map_[it->first] = it;
         }
 
         T2_map_.clear();
-        for (auto& [key, it] : rhs.T2_map_) {
-
-            auto new_it = std::next(T2_.begin(), std::distance(rhs.T2_.begin(), it));
-            T2_map_[key] = new_it;
+        for (auto it = T2_.begin(); it != T2_.end(); ++it) {
+            T2_map_[it->first] = it;
         }
 
         B1_map_.clear();
-        for (auto& [key, it] : rhs.B1_map_) {
-
-            auto new_it = std::next(B1_.begin(), std::distance(rhs.B1_.begin(), it));
-            B1_map_[key] = new_it;
+        for (auto it = B1_.begin(); it != B1_.end(); ++it) {
+            B1_map_[it->first] = it;
         }
 
         B2_map_.clear();
-        for (auto& [key, it] : rhs.B2_map_) {
-
-            auto new_it = std::next(B2_.begin(), std::distance(rhs.B2_.begin(), it));
-            B2_map_[key] = new_it;
+        for (auto it = B2_.begin(); it != B2_.end(); ++it) {
+            B2_map_[it->first] = it;
         }
     }
     void dump_list_(std::list<std::pair<KeyT, T>> & list) {

@@ -18,10 +18,16 @@ cmake -B build-release -DCMAKE_BUILD_TYPE=Release
 
 ### Сборка
 
-Собрать всё:
+Debug:
 ```bash
-cmake --build build-debug cmake --build build-release
+cmake --build build-debug
 ```
+
+Release:
+```bash
+cmake --build build-release
+```
+
 
 Собрать только один исполняемый файл (например, arc_cache_unit_tests):
 ```bash

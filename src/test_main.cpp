@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <optional>
-#include "ARC_cache.h"
-#include "Perfect_cache.h"
+#include "ARC_cache.hpp"
+#include "Perfect_cache.hpp"
 
 int main () {
 
@@ -10,6 +10,18 @@ int main () {
     std::cin.tie(nullptr); // detach cin from cout
     size_t capacity, n;
     std::cin >> capacity >> n;
+
+    if (capacity <= 0) {
+
+        DEBUG_PRINTF("ERROR: invalid cache size\n");
+        return 1;
+    }
+
+    if (n <= 0) {
+
+        DEBUG_PRINTF("ERROR: invalid input keys amount\n");
+        return 1;
+    }
 
     std::vector<int> requests(n);
     for (auto& key : requests) {
