@@ -64,59 +64,13 @@ class ARC_cache {
 
 public:
 
-    ARC_cache() : ARC_cache(10) {};
+    ARC_cache() : capacity_(10), adapt_par_(0) {}
+    explicit ARC_cache(size_t capacity) : capacity_(capacity), adapt_par_(0) {}
 
-    explicit ARC_cache(size_t capacity) : capacity_(capacity), adapt_par_(0) {};
-
-    ARC_cache(const ARC_cache& rhs) : 
-
-        capacity_(rhs.capacity_), adapt_par_(rhs.adapt_par_),
-        T1_(rhs.T1_), T2_(rhs.T2_), B1_(rhs.B1_), B2_(rhs.B2_) {
-        rebuild_maps_from_(rhs);
-    }
-    
-    ARC_cache& operator=(const ARC_cache& rhs) {
-
-        if (this != &rhs) {
-
-            capacity_ = rhs.capacity_;
-            adapt_par_ = rhs.adapt_par_;
-            T1_ = rhs.T1_;
-            T2_ = rhs.T2_;
-            B1_ = rhs.B1_;
-            B2_ = rhs.B2_;
-            rebuild_maps_from_(rhs);
-        }
-        
-        return *this;
-    }
-
-    ARC_cache(ARC_cache&& rhs) noexcept : // no need to renew iterators as they are valid after move
-        capacity_(rhs.capacity_), adapt_par_(std::move(rhs.adapt_par_)),
-        T1_(std::move(rhs.T1_)), T2_(std::move(rhs.T2_)),
-        B1_(std::move(rhs.B1_)), B2_(std::move(rhs.B2_)),
-        T1_map_(std::move(rhs.T1_map_)), T2_map_(std::move(rhs.T2_map_)),
-        B1_map_(std::move(rhs.B1_map_)), B2_map_(std::move(rhs.B2_map_)) {}
-
-
-    ARC_cache& operator=(ARC_cache&& rhs) noexcept {  
-        
-        if (this != &rhs) {
-
-            capacity_ = rhs.capacity_;
-            adapt_par_ = std::move(rhs.adapt_par_); 
-            T1_ = std::move(rhs.T1_);
-            T2_ = std::move(rhs.T2_);
-            B1_ = std::move(rhs.B1_);
-            B2_ = std::move(rhs.B2_);
-            T1_map_ = std::move(rhs.T1_map_);
-            T2_map_ = std::move(rhs.T2_map_);
-            B1_map_ = std::move(rhs.B1_map_);
-            B2_map_ = std::move(rhs.B2_map_);
-        }
-        return *this;
-    }
-
+    ARC_cache(const ARC_cache&) = delete;
+    ARC_cache& operator=(const ARC_cache&) = delete;
+    ARC_cache(ARC_cache&&) = delete;
+    ARC_cache& operator=(ARC_cache&&) = delete;
     ~ARC_cache() = default;
 
     void dump() {
