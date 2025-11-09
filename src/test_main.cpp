@@ -28,37 +28,48 @@ int main () {
         std::cin >> key;
     }
     
-    ARC_cache<int, int> cache(capacity);
-    int cache_hits = 0;
-    cache.dump();
+    ARC_cache<int, int> arc_cache(capacity);
+    int arc_cache_hits = 0;
+    arc_cache.dump();
     std::cout << std::endl;
-    for (auto& key : requests) {
-   
-        std::cout << "get & put: " << key << std::endl;
-        std::optional<std::reference_wrapper<int>> res = cache.get(key);
+    
+    #ifdef TIME_MEASURE
+    {
+        Timer timer;
+    #endif
 
-        if (!res) {
+        for (auto& key : requests) {
+       
+            std::cout << "get & put: " << key << std::endl;
+            std::optional<std::reference_wrapper<int>> res = arc_cache.get(key);
 
-            std::cout << "Miss!" << std::endl;
-            cache.put(key, key);
-        } 
+            if (!res) {
 
-        else {
+                std::cout << "Miss!" << std::endl;
+                arc_cache.put(key, key);
+            } 
 
-            std::cout << "Hit!" << std::endl;
-            cache_hits++;
+            else {
+
+                std::cout << "Hit!" << std::endl;
+                arc_cache_hits++;
+            }
+
+            //arc_cache.dump();
+            std::cout << std::endl;
         }
-
-        //cache.dump();
-        std::cout << std::endl;
+    
+    #ifdef TIME_MEASURE
     }
+    #endif
 
-    std::cout << cache_hits << std::endl;
+    std::cout << arc_cache_hits << std::endl;
 
     std::vector<std::pair<int, int>> pair_requests(n);
     for (size_t i = 0; i < requests.size(); ++i) 
         pair_requests[i] = {requests[i], requests[i]};
      
-    cache_hits = Perfect_cache(pair_requests, capacity);
-    std::cout << cache_hits << std::endl;
+    Perfect_cache<int> perfect_cache(capacity, pair_requests); 
+    int perfect_cache_hits = perfect_cache.run();
+    std::cout << perfect_cache_hits;
 }

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <optional>
 #include "Debug_printf.h"
 #include "Perfect_cache.hpp"
 
@@ -33,8 +32,8 @@ int main () {
     std::vector<std::pair<int, int>> pair_requests(n);
     for (size_t i = 0; i < requests.size(); ++i) 
         pair_requests[i] = {requests[i], requests[i]};
-     
-    cache_hits = Perfect_cache(pair_requests, capacity);
+    Perfect_cache<int> cache(capacity, pair_requests); 
+    cache_hits = cache.run();
     std::cout << cache_hits;
     
     return 0;

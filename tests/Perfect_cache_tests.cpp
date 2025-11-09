@@ -39,7 +39,8 @@ void run_ideal_tests() {
             requests.push_back({key, key});
         }
         
-        int hits = Perfect_cache(requests, test.capacity);
+        Perfect_cache<int> cache(test.capacity, requests); 
+        int hits = cache.run();
 
         if (hits == test.expected_hits) {
             std::cout << "[PASS] Test " << i+1 << ": " << test.name << std::endl;

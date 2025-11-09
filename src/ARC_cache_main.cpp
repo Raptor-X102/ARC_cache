@@ -2,6 +2,7 @@
 #include <vector>
 #include <optional>
 #include "ARC_cache.hpp"
+#include "Timer.hpp"
 
 int main () {
 
@@ -29,15 +30,25 @@ int main () {
     
     ARC_cache<int, int> cache(capacity);
     int cache_hits = 0;
-    for (auto& key : requests) {
-   
-        std::optional<std::reference_wrapper<int>> res = cache.get(key);
-        if (!res) 
-            cache.put(key, key);
+    
+    #ifdef TIME_MEASURE
+    {
+        Timer timer;
+    #endif
 
-        else
-            cache_hits++;
+        for (auto& key : requests) {
+       
+            std::optional<std::reference_wrapper<int>> res = cache.get(key);
+            if (!res) 
+                cache.put(key, key);
+
+            else
+                cache_hits++;
+        }
+
+    #ifdef TIME_MEASURE
     }
+    #endif
 
     std::cout << cache_hits;
 
