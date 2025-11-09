@@ -14,41 +14,41 @@ class ARC_cache {
     
     class Adaptive_parameter {
     private:
-        ARC_cache* owner_;  
+        int p_ = 0;
 
     public:
-        explicit Adaptive_parameter(ARC_cache* owner) : owner_(owner) {}
+        Adaptive_parameter() = default;
+        explicit Adaptive_parameter(int p) : p_(p) {}
 
-        void increase() {
+        void increase(ARC_cache* owner) {
 
-            if (owner_->B1_.empty()) return;
+            if (owner->B1_.empty()) return;
 
             int adjustment = std::max(1, static_cast<int>(std::round(
-                static_cast<double>(owner_->B2_.size()) / owner_->B1_.size()
+                static_cast<double>(owner->B2_.size()) / owner->B1_.size()
             )));
-            owner_->p_ = std::min(
-                owner_->p_ + adjustment,
-                static_cast<int>(owner_->capacity_)
+            p_ = std::min(
+                 p_ + adjustment,
+                 static_cast<int>(owner->capacity_)
             );
         }
 
-        void decrease() {
-            if (owner_->B2_.empty()) return;
+        void decrease(ARC_cache* owner) {
+            if (owner->B2_.empty()) return;
 
             int adjustment = std::max(1, static_cast<int>(std::round(
-                static_cast<double>(owner_->B1_.size()) / owner_->B2_.size()
+                static_cast<double>(owner->B1_.size()) / owner->B2_.size()
             )));
-            owner_->p_ = std::max(owner_->p_ - adjustment, 0);
+            p_ = std::max(p_ - adjustment, 0);
         }
 
         int get() const { 
         
-            return owner_->p_; 
+            return p_; 
         }
     };
 
     size_t capacity_;
-    int p_ = 0;
 
     std::list<std::pair<KeyT, T>> T1_; // Recently used
     std::list<std::pair<KeyT, T>> T2_; // Frequently used
@@ -66,13 +66,13 @@ public:
 
     ARC_cache() : ARC_cache(10) {};
 
-    explicit ARC_cache(size_t capacity) : capacity_(capacity), adapt_par_(this) {}
+    explicit ARC_cache(size_t capacity) : capacity_(capacity), adapt_par_(0) {};
 
     ARC_cache(const ARC_cache& rhs) : 
 
-        capacity_(rhs.capacity_), adapt_par_(this),
+        capacity_(rhs.capacity_), adapt_par_(rhs.adapt_par_),
         T1_(rhs.T1_), T2_(rhs.T2_), B1_(rhs.B1_), B2_(rhs.B2_) {
-        rebuild_maps_from(rhs);
+        rebuild_maps_from_(rhs);
     }
     
     ARC_cache& operator=(const ARC_cache& rhs) {
@@ -80,18 +80,19 @@ public:
         if (this != &rhs) {
 
             capacity_ = rhs.capacity_;
+            adapt_par_ = rhs.adapt_par_;
             T1_ = rhs.T1_;
             T2_ = rhs.T2_;
             B1_ = rhs.B1_;
             B2_ = rhs.B2_;
-            rebuild_maps_from(rhs);
+            rebuild_maps_from_(rhs);
         }
         
         return *this;
     }
 
     ARC_cache(ARC_cache&& rhs) noexcept : // no need to renew iterators as they are valid after move
-        capacity_(rhs.capacity_), adapt_par_(this),
+        capacity_(rhs.capacity_), adapt_par_(std::move(rhs.adapt_par_)),
         T1_(std::move(rhs.T1_)), T2_(std::move(rhs.T2_)),
         B1_(std::move(rhs.B1_)), B2_(std::move(rhs.B2_)),
         T1_map_(std::move(rhs.T1_map_)), T2_map_(std::move(rhs.T2_map_)),
@@ -103,6 +104,7 @@ public:
         if (this != &rhs) {
 
             capacity_ = rhs.capacity_;
+            adapt_par_ = std::move(rhs.adapt_par_); 
             T1_ = std::move(rhs.T1_);
             T2_ = std::move(rhs.T2_);
             B1_ = std::move(rhs.B1_);
@@ -128,173 +130,197 @@ public:
         std::cout << std::endl;
     }
 
-    void move_to_T2(KeyT key, T&& val) {
-
-        T2_.push_front({key, std::move(val)});
-        T2_map_[key] = T2_.begin();
-    }
-
-    void evict() {
-
-        if (T1_.size() > std::max(1, adapt_par_.get())) {
-
-            auto it = std::prev(T1_.end());
-            auto& [k, v] = *it;
-            B1_.splice(B1_.begin(), T1_, it);
-            T1_map_.erase(k);
-            B1_map_[k] = B1_.begin();
-
-            if (B1_.size() > capacity_) {
-
-                auto last = std::prev(B1_.end());
-                B1_map_.erase(last->first);
-                B1_.erase(last);
-            }
-        } 
-
-        else {
-
-            if (T2_.empty()) 
-                return;
-
-            auto it = std::prev(T2_.end());
-            auto& [k, v] = *it;
-            B2_.splice(B2_.begin(), T2_, it);
-            T2_map_.erase(k);
-            B2_map_[k] = B2_.begin();
-
-            if (B2_.size() > capacity_) {
-
-                auto last = std::prev(B2_.end());
-                B2_map_.erase(last->first);
-                B2_.erase(last);
-            }
-        }
-    }
-
     std::optional<std::reference_wrapper<T>> get(KeyT key) {
 
-        //DEBUG_PRINTF("GET\n");
-        auto it1 = T1_map_.find(key);
-        if (it1 != T1_map_.end()) {
-
-            //DEBUG_PRINTF("FOUND IN T1\n");
-            auto list_it = it1->second;
-            auto& [k, v] = *list_it;
-            T2_.splice(T2_.begin(), T1_, list_it);
-            T1_map_.erase(k);
-            T2_map_[k] = T2_.begin();
-            return std::ref(T2_.begin()->second);
+        if (auto result = find_and_promote_in_cache_(key)) {
+            return result;
         }
 
-        auto it2 = T2_map_.find(key);
-        if (it2 != T2_map_.end()) {
-
-            //DEBUG_PRINTF("FOUND IN T2\n");
-            auto list_it = it2->second;
-            auto& [k, v] = *list_it;
-            T2_.splice(T2_.begin(), T2_, list_it);
-            T2_map_[k] = T2_.begin();
-            return std::ref(T2_.begin()->second);
-        }
-
-        //DEBUG_PRINTF("NOT FOUND IN T1 OR T2\n");
         return std::nullopt;
     }
 
     void put(KeyT key, T value) {
 
-        //DEBUG_PRINTF("PUT\n");
-        auto it1 = T1_map_.find(key);
-        if (it1 != T1_map_.end()) {
-
-            //DEBUG_PRINTF("FOUND IN T1\n");
-            auto list_it = it1->second;
-            auto& [k, v] = *list_it;
-            T2_.splice(T2_.begin(), T1_, list_it);
-            T1_map_.erase(k);
-            T2_map_[k] = T2_.begin();
+        if (find_and_promote_in_cache_(key)) {
             return;
         }
 
-        auto it2 = T2_map_.find(key);
-        if (it2 != T2_map_.end()) {
-
-            //DEBUG_PRINTF("FOUND IN T2\n");
-            auto list_it = it2->second;
-            auto& [k, v] = *list_it;
-            T2_.splice(T2_.begin(), T2_, list_it);
-            T2_map_[k] = T2_.begin();
+        if (handle_ghost_hit_(key)) {
             return;
         }
 
-        auto itB1 = B1_map_.find(key);
-        if (itB1 != B1_map_.end()) {
-
-            //DEBUG_PRINTF("FOUND IN B1\n");
-            auto list_it = itB1->second;
-            auto& [k, v] = *list_it;
-            adapt_par_.increase();
-            B1_map_.erase(k);
-            T2_.splice(T2_.begin(), B1_, list_it);
-            T2_map_[k] = T2_.begin();
-            while (T1_.size() + T2_.size() > capacity_) evict();
-            return;
-        }
-
-        auto itB2 = B2_map_.find(key);
-        if (itB2 != B2_map_.end()) {
-
-            //DEBUG_PRINTF("FOUND IN B2\n");
-            auto list_it = itB2->second;
-            auto& [k, v] = *list_it;
-            adapt_par_.decrease();
-            B2_map_.erase(k);
-            T2_.splice(T2_.begin(), B2_, list_it);
-            T2_map_[k] = T2_.begin();
-            while (T1_.size() + T2_.size() > capacity_) evict();
-            return;
-        }
-        
-        if (T1_.size() + T2_.size() >= capacity_) 
-            evict();
-        //DEBUG_PRINTF("NOT FOUND\n");
-        T1_.push_front({key, std::move(value)});
-        T1_map_[key] = T1_.begin();
+        insert_new_element_(key, std::move(value));
     }
 
 private:
     
-    void rebuild_maps_from(const ARC_cache& rhs) {
+    void rebuild_maps_from_(const ARC_cache& rhs) {
 
         T1_map_.clear();
-        for (auto it = T1_.begin(); it != T1_.end(); ++it) {
+        for (auto it = T1_.begin(); it != T1_.end(); ++it) 
             T1_map_[it->first] = it;
-        }
 
         T2_map_.clear();
-        for (auto it = T2_.begin(); it != T2_.end(); ++it) {
+        for (auto it = T2_.begin(); it != T2_.end(); ++it)
             T2_map_[it->first] = it;
-        }
 
         B1_map_.clear();
-        for (auto it = B1_.begin(); it != B1_.end(); ++it) {
+        for (auto it = B1_.begin(); it != B1_.end(); ++it)
             B1_map_[it->first] = it;
-        }
+        
 
         B2_map_.clear();
-        for (auto it = B2_.begin(); it != B2_.end(); ++it) {
+        for (auto it = B2_.begin(); it != B2_.end(); ++it)
             B2_map_[it->first] = it;
+    }
+
+    std::optional<std::reference_wrapper<T>> find_and_promote_in_cache_(KeyT key) {
+
+        if (auto it = T1_map_.find(key); it != T1_map_.end()) {
+
+            //DEBUG_PRINTF("FOUND IN T1\n");
+            promote_from_T1_to_T2_(it->second);
+            return std::ref(T2_.front().second);
+        }
+
+        if (auto it = T2_map_.find(key); it != T2_map_.end()) {
+
+            //DEBUG_PRINTF("FOUND IN T2\n");
+            promote_within_T2_(it->second);
+            return std::ref(T2_.front().second);
+        }
+
+        return std::nullopt;
+    }
+
+    bool handle_ghost_hit_(KeyT key) {
+
+        if (auto it = B1_map_.find(key); it != B1_map_.end()) {
+
+            //DEBUG_PRINTF("FOUND IN B1\n");
+            handle_B1_hit_(it->second);
+            return true;
+        }
+
+        if (auto it = B2_map_.find(key); it != B2_map_.end()) {
+
+            //DEBUG_PRINTF("FOUND IN B2\n");
+            handle_B2_hit_(it->second);
+            return true;
+        }
+
+        return false;
+    }
+
+    void insert_new_element_(KeyT key, T&& value) {
+
+        if (T1_.size() + T2_.size() >= capacity_)
+            evict_();
+        
+        T1_.push_front({key, std::move(value)});
+        T1_map_[key] = T1_.begin();
+    }
+
+    void promote_from_T1_to_T2_(typename std::list<std::pair<KeyT, T>>::iterator it) {
+
+        auto& [k, v] = *it;
+        T2_.splice(T2_.begin(), T1_, it);
+        T1_map_.erase(k);
+        T2_map_[k] = T2_.begin();
+    }
+
+    void promote_within_T2_(typename std::list<std::pair<KeyT, T>>::iterator it) {
+
+        auto& [k, v] = *it;
+        T2_.splice(T2_.begin(), T2_, it);
+        T2_map_[k] = T2_.begin();
+    }
+
+    void handle_B1_hit_(typename std::list<std::pair<KeyT, T>>::iterator it) {
+
+        auto& [k, v] = *it;
+        adapt_par_.increase(this);
+        B1_map_.erase(k);
+        T2_.splice(T2_.begin(), B1_, it);
+        T2_map_[k] = T2_.begin();
+        maintain_cache_size_();
+    }
+
+    void handle_B2_hit_(typename std::list<std::pair<KeyT, T>>::iterator it) {
+
+        auto& [k, v] = *it;
+        adapt_par_.decrease(this);
+        B2_map_.erase(k);
+        T2_.splice(T2_.begin(), B2_, it);
+        T2_map_[k] = T2_.begin();
+        maintain_cache_size_();
+    }
+
+    void maintain_cache_size_() {
+
+        while (T1_.size() + T2_.size() > capacity_) 
+            evict_();
+    }
+
+    
+    void evict_() {
+
+        if (should_evict_from_T1_())
+            evict_from_T1_();
+        
+        else
+            evict_from_T2_();
+    }
+
+    bool should_evict_from_T1_() const {
+
+        return T1_.size() > std::max(1, adapt_par_.get());
+    }
+
+    void evict_from_T1_() {
+
+        evict_from_list_(T1_, T1_map_, B1_, B1_map_);
+    }
+
+    void evict_from_T2_() {
+
+        if (T2_.empty()) return;
+        evict_from_list_(T2_, T2_map_, B2_, B2_map_);
+    }
+
+    void evict_from_list_(std::list<std::pair<KeyT, T>>& from_list,
+                        std::unordered_map<KeyT, typename std::list<std::pair<KeyT, T>>::iterator>& from_map,
+                        std::list<std::pair<KeyT, T>>& to_list,
+                        std::unordered_map<KeyT, typename std::list<std::pair<KeyT, T>>::iterator>& to_map) {
+
+        auto it = std::prev(from_list.end());
+        auto& [k, v] = *it;
+        
+        to_list.splice(to_list.begin(), from_list, it);
+        from_map.erase(k);
+        to_map[k] = to_list.begin();
+
+        trim_ghost_list_(to_list, to_map);
+    }
+
+    void trim_ghost_list_(std::list<std::pair<KeyT, T>>& list,
+                        std::unordered_map<KeyT, typename std::list<std::pair<KeyT, T>>::iterator>& map) {
+
+        if (list.size() > capacity_) {
+
+            auto last = std::prev(list.end());
+            map.erase(last->first);
+            list.erase(last);
         }
     }
-    void dump_list_(std::list<std::pair<KeyT, T>> & list) {
 
-        for(auto [k, v] : list) 
+    void dump_list_(const std::list<std::pair<KeyT, T>>& list) {
+
+        for (const auto& [k, v] : list)
             std::cout << "(" << k << ", " << v << ") ";
-
+        
         std::cout << std::endl;
     }
 };
-
 
 #endif
